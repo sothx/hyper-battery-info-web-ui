@@ -115,3 +115,7 @@ body,
     background-position: 30% 50%;
   }
 }
+
+[v-cloak] {
+	display: none;
+}

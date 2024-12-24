@@ -64,7 +64,7 @@ export function useBatteryInfo() {
         // 当前电池容量
         chargeFull.value = Number(getBatteryChargeFullRes)
         // 当前电池循环次数
-        cycleCount = Number(getBatteryCycleCountRes)
+        cycleCount.value = Number(getBatteryCycleCountRes)
     }
 
 
