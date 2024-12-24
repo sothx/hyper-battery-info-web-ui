@@ -6,13 +6,13 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
+    <link rel="stylesheet" type="text/css" href="./assets/style.css"/>
     <script type="module" src="./assets/ResizeObserver.global.js"></script>
     <script src="./assets/taildwind.css.js"></script>
     <script src="./assets/vue.global.js"></script>
     <script src="./assets/naive-ui.js"></script>
     <script type="module" src="./assets/kernelsu/index.js"></script>
     <script type="module" src="./web.config.js"></script>
-    <link rel="stylesheet" type="text/css" href="./assets/style.css" />
   </head>
 
   <body>
@@ -122,8 +122,7 @@
                         size="small"
                         type="success"
                         @click="realQuantityHook.capacityRawInfo.reload()"
-                        >手动刷新</n-button
-                      >
+                        >手动刷新</n-button>
                       <n-switch
                         class="ml-2"
                         v-model:value="realQuantityHook.capacityRawInfo.autoReload"
