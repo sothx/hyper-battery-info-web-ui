@@ -1,8 +1,8 @@
-# Shamiko 工作模式 For Web UI
+# Hyper OS 电池信息 For Web UI
 
 ## 模块简介
 
-该Magisk模块可以可视化快速切换Shamiko的工作模式。
+该Magisk模块可以可视化查看有关 Hyper OS 设备的内核电池健康信息
 
 ## Web UI 开发模式和生产模式
 

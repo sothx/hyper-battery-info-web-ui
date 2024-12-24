@@ -1,244 +1,466 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <script type="module" src="./assets/ResizeObserver.global.js"></script>
+    <script src="./assets/taildwind.css.js"></script>
+    <script src="./assets/vue.global.js"></script>
+    <script src="./assets/naive-ui.js"></script>
+    <script type="module" src="./assets/kernelsu/index.js"></script>
+    <script type="module" src="./web.config.js"></script>
+    <link rel="stylesheet" type="text/css" href="./assets/style.css" />
+  </head>
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <script type="module" src="./assets/ResizeObserver.global.js"></script>
-  <script src="./assets/vue.global.js"></script>
-  <script src="./assets/naive-ui.js"></script>
-  <script type="module" src="./assets/kernelsu/index.js"></script>
-  <script type="module" src="./web.config.js"></script>
-  <link rel="stylesheet" type="text/css" href="./assets/style.css">
-</head>
+  <body>
+    <div id="app">
+      <n-config-provider id="layout" :theme="theme">
+        <header id="header">Hyper OS 电池信息 For Web UI</header>
+        <main id="main">
+          <div class="setting">
+            <div class="mt-3">
+              <div class="px-3">
+                <h3 :class="`text-base font-semibold leading-7`">
+                  <span
+                    class="animated-bg bg-clip-text font-semibold text-transparent"
+                    style="
+                      background-image: linear-gradient(
+                        101.22deg,
+                        rgb(255, 182, 133) -18.32%,
+                        rgb(255, 111, 29) 7.01%,
+                        rgb(252, 181, 232) 41.59%,
+                        rgb(135, 148, 255) 70.98%,
+                        rgb(60, 112, 255) 91.35%,
+                        rgb(60, 112, 255) 110.17%
+                      );
+                    "
+                    >电池信息</span
+                  >
+                </h3>
+                <p
+                  :class="`mt-1 max-w-2xl text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-500'}`"
+                >
+                  查看有关电池健康的内核信息
+                </p>
+              </div>
 
-<body>
-  <div id="app">
-    <n-config-provider id="layout" :theme="theme">
-      <header id="header">Shamiko 工作模式 For Web UI</header>
-      <main id="main">
-        <n-card class="shamikoMode" title="Shamiko 工作模式">
-          <n-switch :rail-style="railStyle" @update:value="(value) => changeShamikoMode(value)" :value="currentShamikoMode === 'whitelist' ? true : false" :loading="switchShamikoModeLoading">
-            <template #checked>白名单模式</template>
-            <template #unchecked>黑名单模式</template>
-          </n-switch>
-        </n-card>
-        </n-card>
-      </main>
-      <footer id="footer">Designed By Sothx</footer>
-    </n-config-provider>
-  </div>
-  <script type="module">
-    import {
-      exec
-    } from './assets/kernelsu/index.js';
-    import resizeObserverPolyfill from './assets/ResizeObserver.global.js';
-    import webConfig from './web.config.js'
-    const {
-      createApp,
-      ref,
-      onMounted,
-      computed
-    } = Vue;
-    const {
-      useOsTheme,
-      darkTheme,
-      lightTheme,
-      createDiscreteApi
-    } = naive;
+              <div
+                :class="`mt-3 border-t ${osTheme=== 'dark' ? 'divide-sothx-gray-color border-sothx-gray-color' : 'divide-gray-200 border-gray-200'}`"
+              >
+                <dl
+                  :class="`divide-y ${osTheme=== 'dark' ? 'divide-sothx-gray-color' : 'divide-gray-200'}`"
+                >
+                  <div
+                    class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4"
+                  >
+                    <dt
+                      :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`"
+                    >
+                      真实电量（高通） {{ osThemeRef }}
+                    </dt>
+                    <dd
+                      :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2 sm:mt-0`"
+                    >
+                      <p>
+                        {{ `${realQuantityHook.qcomBatteryFg1RSocInfo.current}
+                        %` }}
+                        <n-button
+                          class="ml-1"
+                          strong
+                          secondary
+                          size="small"
+                          type="success"
+                          @click="realQuantityHook.qcomBatteryFg1RSocInfo.reload()"
+                          >手动刷新</n-button
+                        >
+                        <n-switch
+                          class="ml-2"
+                          v-model:value="realQuantityHook.qcomBatteryFg1RSocInfo.autoReload"
+                          :rail-style="railStyle"
+                        >
+                          <template #checked>开启自动刷新</template>
+                          <template #unchecked>未开启自动刷新</template>
+                        </n-switch>
+                      </p>
+                      <div
+                        v-if="realQuantityHook.qcomBatteryFg1RSocInfo.autoReload"
+                      >
+                        <p class="my-2">隔多少秒刷新一次</p>
+                        <p>
+                          <n-slider
+                            v-model:value="realQuantityHook.qcomBatteryFg1RSocInfo.timer"
+                            size="small"
+                            :min="1"
+                            :max="30"
+                            :step="1"
+                          />
+                          <n-input-number
+                            :show-button="false"
+                            class="pt-3"
+                            readonly
+                            placeholder="请输入刷新频率间隔时间"
+                            v-model:value="realQuantityHook.qcomBatteryFg1RSocInfo.timer"
+                            :min="0"
+                            :max="30"
+                            :step="1"
+                          />
+                        </p>
+                      </div>
+                    </dd>
+                  </div>
+                  <div
+                  v-if="realQuantityHook.capacityRawInfo.current"
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  <dt
+                    :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
+                    真实电量
+                  </dt>
+                  <dd
+                    :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2 sm:mt-0`">
+                    <p
+                      >{{ `${realQuantityHook.capacityRawInfo.current / 100} %` }}
+                      <n-button
+                        class="ml-1"
+                        strong
+                        secondary
+                        size="small"
+                        type="success"
+                        @click="realQuantityHook.capacityRawInfo.reload()"
+                        >手动刷新</n-button
+                      >
+                      <n-switch
+                        class="ml-2"
+                        v-model:value="realQuantityHook.capacityRawInfo.autoReload"
+                        :rail-style="railStyle">
+                        <template #checked>开启自动刷新</template>
+                        <template #unchecked>未开启自动刷新</template>
+                      </n-switch>
+                    </p>
+                    <div v-if="realQuantityHook.capacityRawInfo.autoReload">
+                      <p class="my-2"> 隔多少秒刷新一次 </p>
+                      <p>
+                        <n-slider
+                          v-model:value="realQuantityHook.capacityRawInfo.timer"
+                          size="small"
+                          :min="1"
+                          :max="30"
+                          :step="1" />
+                        <n-input-number
+                          :show-button="false"
+                          class="pt-3"
+                          readonly
+                          placeholder="请输入刷新频率间隔时间"
+                          v-model:value="realQuantityHook.capacityRawInfo.timer"
+                          :min="0"
+                          :max="30"
+                          :step="1" />
+                      </p>
+                    </div>
+                  </dd>
+                </div>
+                <div
+                  v-if="batteryInfoHook.chargeFullDesign.value"
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt
+                    :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
+                    电池出厂设计容量
+                  </dt>
+                  <dd
+                    :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2`">
+                    <p>{{ `${batteryInfoHook.chargeFullDesign.value / 1000} mAh` }}</p>
+                  </dd>
+                </div>
+                <div
+                  v-if="batteryInfoHook.chargeFull.value"
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt
+                    :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
+                    电池当前预估容量
+                  </dt>
+                  <dd
+                    :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2`">
+                    <p>{{ `${batteryInfoHook.chargeFull.value / 1000} mAh` }}</p>
+                  </dd>
+                </div>
+                <div
+                  v-if="batteryInfoHook.cycleCount.value"
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt
+                    :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
+                    电池循环充电次数
+                  </dt>
+                  <dd
+                    :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2`">
+                    <p>{{ `${batteryInfoHook.cycleCount.value} 次` }}</p>
+                  </dd>
+                </div>
+                <div
+                  v-if="batteryInfoHook.chargeFullDesign.value && batteryInfoHook.chargeFull.value"
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt
+                    :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
+                    电池预估健康度
+                  </dt>
+                  <dd
+                    :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2`">
+                    <p>{{
+                      `${((batteryInfoHook.chargeFull.value / batteryInfoHook.chargeFullDesign.value) * 100).toFixed(2)} %`
+                    }}</p>
+                  </dd>
+                </div>
+                <div
+                  v-if="batteryInfoHook.sohQcom.value"
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt
+                    :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
+                    电池售后健康度（高通）
+                  </dt>
+                  <dd
+                    :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2`">
+                    <p>{{ `${batteryInfoHook.sohQcom.value} %` }}</p>
+                    <p>{{
+                      `≈ ${Math.round((batteryInfoHook.chargeFullDesign.value * (batteryInfoHook.sohQcom.value / 100)) / 1000)} mAh`
+                    }}</p>
+                    <p>(Tips:在设备保修期内健康度低于80%可以申请电池质保)</p>
+                  </dd>
+                </div>
+                <div
+                  v-if="batteryInfoHook.sohMTK.value"
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt
+                    :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
+                    电池售后健康度
+                  </dt>
+                  <dd
+                    :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2`">
+                    <p>{{ `${batteryInfoHook.sohMTK.value} %` }}</p>
+                    <p>{{
+                      `≈ ${Math.round((batteryInfoHook.chargeFullDesign.value * (batteryInfoHook.sohMTK.value / 100)) / 1000)} mAh`
+                    }}</p>
+                    <p>(Tips:在设备保修期内健康度低于80%可以申请电池质保)</p>
+                  </dd>
+                </div>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </main>
+        <footer id="footer">Designed By Sothx</footer>
+      </n-config-provider>
+    </div>
+    <script type="module">
+      import { exec } from "./assets/kernelsu/index.js";
+      import resizeObserverPolyfill from "./assets/ResizeObserver.global.js";
+      import { useRealQuantity } from "./hooks/useRealQuantity.js";
+      import { useBatteryInfo } from "./hooks/useBatteryInfo.js";
+      import webConfig from "./web.config.js";
+      const { createApp, ref, onMounted, computed } = Vue;
+      const { useOsTheme, darkTheme, lightTheme, createDiscreteApi } = naive;
 
-    const app = createApp({
-      setup() {
-        // 深色主题
-        const osThemeRef = useOsTheme()
-        const configProviderPropsRef = computed(() => ({
-          theme: osThemeRef.value === 'dark' ? darkTheme : lightTheme
-        }))
-        const {
-          message,
-          modal,
-          notification
-        } = createDiscreteApi(['message', 'modal', 'notification'], {
-          configProviderProps: configProviderPropsRef,
-        });
-        // Shamiko开关 
-        const switchShamikoModeLoading = ref(true);
-        const currentShamikoMode = ref('blacklist');
-        // 开关样式
-        const railStyle = ({
-          focused,
-          checked
-        }) => {
-          const style = {};
-          if (checked) {
-            style.background = '#d03050';
-            if (focused) {
-              style.boxShadow = '0 0 0 2px #d0305040';
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "sothx-gray-color": "rgba(255, 255, 255, 0.09)",
+            },
+          },
+          screens: {
+            sm: "640px",
+            md: "768px",
+            lg: "896px", // 修改默认 lg 断点
+            xl: "1024px",
+            "2xl": "1280px",
+          },
+        },
+      };
+
+      const app = createApp({
+        setup() {
+          // 深色主题
+          const osThemeRef = useOsTheme();
+          const realQuantityHook = useRealQuantity();
+          const batteryInfoHook = useBatteryInfo();
+          const configProviderPropsRef = computed(() => ({
+            theme: osThemeRef === "dark" ? darkTheme : lightTheme,
+          }));
+          const { message, modal, notification } = createDiscreteApi(
+            ["message", "modal", "notification"],
+            {
+              configProviderProps: configProviderPropsRef,
             }
-          } else {
-            style.background = '#2080f0';
-            if (focused) {
-              style.boxShadow = '0 0 0 2px #2080f040';
+          );
+          // Shamiko开关
+          const switchShamikoModeLoading = ref(true);
+          const currentShamikoMode = ref("blacklist");
+          // 开关样式
+          const railStyle = ({ focused, checked }) => {
+            const style = {};
+            if (checked) {
+              style.background = "#d03050";
+              if (focused) {
+                style.boxShadow = "0 0 0 2px #d0305040";
+              }
+            } else {
+              style.background = "#2080f0";
+              if (focused) {
+                style.boxShadow = "0 0 0 2px #2080f040";
+              }
             }
-          }
-          return style;
-        };
-        // 获取Shamiko状态
-        const getShamikoMode = () => {
-          const shellCommon = `ls /data/adb/shamiko/whitelist &>/dev/null && echo "whitelist" || echo "blacklist"`;
-          return new Promise(async (resolve, reject) => {
-            // Mock数据
-            if (webConfig.env === 'dev') {
-              resolve('whitelist')
-            }
-            try {
-              const {
-                errno,
-                stdout,
-                stderr
-              } = await exec(shellCommon);
-              errno ? reject(stderr) : resolve(stdout);
-            } catch (err) {
-              reject(err)
-            }
-          })
-        }
-        const putShamikoMode = (mode) => {
-          if (['whitelist', 'blacklist'].includes(mode)) {
-            const shellCommon =
-              mode === 'whitelist' ? `touch /data/adb/shamiko/whitelist` : 'rm -rf /data/adb/shamiko/whitelist';
+            return style;
+          };
+          // 获取Shamiko状态
+          const getShamikoMode = () => {
+            const shellCommon = `ls /data/adb/shamiko/whitelist &>/dev/null && echo "whitelist" || echo "blacklist"`;
             return new Promise(async (resolve, reject) => {
-            // Mock数据
-            if (webConfig.env === 'dev') {
-              resolve('success')
-            }
+              // Mock数据
+              if (webConfig.env === "dev") {
+                resolve("whitelist");
+              }
               try {
-                const {
-                  errno,
-                  stdout,
-                  stderr
-                } = await exec(shellCommon);
+                const { errno, stdout, stderr } = await exec(shellCommon);
                 errno ? reject(stderr) : resolve(stdout);
               } catch (err) {
-                reject(err)
+                reject(err);
               }
-            })
-          } else {
-            modal.create({
-              title: '更新 Shamiko 工作模式失败',
-              preset: 'dialog',
-              type: 'error',
-              content: `更新的模式类型非法，仅支持whitelist/blacklist`
-            })
-          }
+            });
+          };
+          const putShamikoMode = (mode) => {
+            if (["whitelist", "blacklist"].includes(mode)) {
+              const shellCommon =
+                mode === "whitelist"
+                  ? `touch /data/adb/shamiko/whitelist`
+                  : "rm -rf /data/adb/shamiko/whitelist";
+              return new Promise(async (resolve, reject) => {
+                // Mock数据
+                if (webConfig.env === "dev") {
+                  resolve("success");
+                }
+                try {
+                  const { errno, stdout, stderr } = await exec(shellCommon);
+                  errno ? reject(stderr) : resolve(stdout);
+                } catch (err) {
+                  reject(err);
+                }
+              });
+            } else {
+              modal.create({
+                title: "更新 Shamiko 工作模式失败",
+                preset: "dialog",
+                type: "error",
+                content: `更新的模式类型非法，仅支持whitelist/blacklist`,
+              });
+            }
+          };
+          // 切换ShamikoMode
+          const changeShamikoMode = async (value) => {
+            const currentMode = value ? "whitelist" : "blacklist";
+            putShamikoMode(currentMode)
+              .then((res) => {
+                modal.create({
+                  title: "切换 Shamiko 工作模式成功",
+                  type: "success",
+                  preset: "dialog",
+                  content: `好耶w，Shamiko的工作模式已成功切换为 ${
+                    value ? "白名单模式" : "黑名单模式"
+                  } `,
+                  positiveText: "确定",
+                });
+                currentShamikoMode.value = currentMode;
+              })
+              .catch((err) => {
+                if (err instanceof Error) {
+                  modal.create({
+                    title: "切换 Shamiko 工作模式失败",
+                    preset: "dialog",
+                    type: "error",
+                    content: `错误信息: ${err.message}`,
+                    positiveText: "确定",
+                  });
+                } else {
+                  modal.create({
+                    title: "切换 Shamiko 工作模式失败",
+                    type: "error",
+                    preset: "dialog",
+                    content: `错误信息: ${err}`,
+                    positiveText: "确定",
+                  });
+                }
+              });
+          };
+          // 初始化生命周期
+          onMounted(() => {
+            // 获取Shamiko状态
+            getShamikoMode()
+              .then((res) => {
+                if (res === "whitelist") {
+                  currentShamikoMode.value = "whitelist";
+                  switchShamikoModeLoading.value = false;
+                } else if (res === "blacklist") {
+                  currentShamikoMode.value = "blacklist";
+                  switchShamikoModeLoading.value = false;
+                } else {
+                  modal.create({
+                    title: "获取 Shamiko 工作模式失败",
+                    preset: "dialog",
+                    type: "error",
+                    content: `错误信息: ${res}`,
+                    positiveText: "确定",
+                  });
+                }
+              })
+              .catch((err) => {
+                if (err instanceof Error) {
+                  modal.create({
+                    title: "获取 Shamiko 工作模式失败",
+                    preset: "dialog",
+                    type: "error",
+                    content: `错误信息: ${err.message}`,
+                    positiveText: "确定",
+                  });
+                } else {
+                  modal.create({
+                    title: "获取 Shamiko 工作模式失败",
+                    preset: "dialog",
+                    type: "error",
+                    content: `错误信息: ${err}`,
+                    positiveText: "确定",
+                  });
+                }
+              });
+          });
+
+          return {
+            railStyle,
+            realQuantityHook,
+            batteryInfoHook,
+            switchShamikoModeLoading,
+            currentShamikoMode,
+            changeShamikoMode,
+            theme: computed(() =>
+              osThemeRef === "dark" ? darkTheme : lightTheme
+            ),
+            osTheme: osThemeRef,
+          };
+        },
+      });
+
+      app.use(naive);
+      app.mount("#app");
+
+      const ro = new ResizeObserver((entries, observer) => {
+        for (const entry of entries) {
+          const { left, top, width, height } = entry.contentRect;
+
+          // console.log('Element:', entry.target);
+          // console.log(`Element's size: ${ width }px x ${ height }px`);
+          // console.log(`Element's paddings: ${ top }px ; ${ left }px`);
         }
-        // 切换ShamikoMode
-        const changeShamikoMode = async (value) => {
-          const currentMode = value ? 'whitelist' : 'blacklist'
-          putShamikoMode(currentMode).then((res) => {
-            modal.create({
-              title: '切换 Shamiko 工作模式成功',
-              type: 'success',
-              preset: 'dialog',
-              content: `好耶w，Shamiko的工作模式已成功切换为 ${value ? '白名单模式' : '黑名单模式'} `,
-              positiveText: '确定'
-            })
-            currentShamikoMode.value = currentMode;
-          }).catch((err) => {
-            if (err instanceof Error) {
-              modal.create({
-                title: '切换 Shamiko 工作模式失败',
-                preset: 'dialog',
-                type: 'error',
-                content: `错误信息: ${err.message}`,
-                positiveText: '确定'
-              })
-            } else {
-              modal.create({
-                title: '切换 Shamiko 工作模式失败',
-                type: 'error',
-                preset: 'dialog',
-                content: `错误信息: ${err}`,
-                positiveText: '确定'
-              })
-            }
+      });
 
-          })
-
-        }
-        // 初始化生命周期
-        onMounted(() => {
-          // 获取Shamiko状态
-          getShamikoMode().then((res) => {
-            if (res === 'whitelist') {
-              currentShamikoMode.value = 'whitelist';
-              switchShamikoModeLoading.value = false;
-            } else if (res === 'blacklist') {
-              currentShamikoMode.value = 'blacklist';
-              switchShamikoModeLoading.value = false;
-            } else {
-              modal.create({
-                title: '获取 Shamiko 工作模式失败',
-                preset: 'dialog',
-                type: 'error',
-                content: `错误信息: ${res}`,
-                positiveText: '确定'
-              })
-            }
-
-          }).catch((err) => {
-            if (err instanceof Error) {
-              modal.create({
-                title: '获取 Shamiko 工作模式失败',
-                preset: 'dialog',
-                type: 'error',
-                content: `错误信息: ${err.message}`,
-                positiveText: '确定'
-              })
-            } else {
-              modal.create({
-                title: '获取 Shamiko 工作模式失败',
-                preset: 'dialog',
-                type: 'error',
-                content: `错误信息: ${err}`,
-                positiveText: '确定'
-              })
-            }
-          })
-        });
-
-        return {
-          railStyle,
-          switchShamikoModeLoading,
-          currentShamikoMode,
-          changeShamikoMode,
-          theme: computed(() => (osThemeRef.value === 'dark' ? darkTheme : lightTheme)),
-          osTheme: osThemeRef
-        };
-      },
-    });
-
-    app.use(naive);
-    app.mount("#app");
-
-    const ro = new ResizeObserver((entries, observer) => {
-      for (const entry of entries) {
-        const {
-          left,
-          top,
-          width,
-          height
-        } = entry.contentRect;
-
-
-        // console.log('Element:', entry.target);
-        // console.log(`Element's size: ${ width }px x ${ height }px`);
-        // console.log(`Element's paddings: ${ top }px ; ${ left }px`);
-      }
-    });
-
-    ro.observe(document.body);
-  </script>
-</body>
-
+      ro.observe(document.body);
+    </script>
+  </body>
 </html>
