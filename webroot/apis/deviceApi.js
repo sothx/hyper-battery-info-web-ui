@@ -73,3 +73,15 @@ export const getBatteryCycleCount = () => {
         }
     })
 };
+
+export const getCapacityRaw = () => {
+	const shellCommon = `cat /sys/class/power_supply/bms/capacity_raw`;
+	return new Promise(async (resolve, reject) => {
+        if (webConfig.env === 'dev') {
+            resolve(`9001`);
+        } else {
+            const { errno, stdout, stderr } = await exec(shellCommon);
+            errno ? reject(stderr) : stdout === 'null' ? resolve('') : resolve(stdout);
+        }
+    })
+};

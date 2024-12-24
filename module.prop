@@ -1,6 +1,6 @@
 id=hyper-battery-info-web-ui
 name=Hyper OS 电池信息 For Web UI
-version=1.00.02
-versionCode=10002
+version=1.00.06
+versionCode=10006
 author=酷安@做梦书
 description=可视化查看有关Hyper OS设备电池健康的内核信息，有关模块库的更多信息请查看Github(https://github.com/sothx/hyper-battery-info-web-ui)

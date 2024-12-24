@@ -44,9 +44,9 @@ export function useRealQuantity() {
 		autoReload: false,
 		timer: 3,
 		reload: async() => {
-			const [, getQcomBatteryFg1RSocRes] = await $to(deviceApi.getQcomBatteryFg1RSoc());
-			if (getQcomBatteryFg1RSocRes) {
-				qcomBatteryFg1RSocInfo.current = Number(getQcomBatteryFg1RSocRes);
+			const [, getCapacityRawRes] = await $to(deviceApi.getCapacityRaw());
+			if (getCapacityRawRes) {
+				capacityRawInfo.current = Number(getCapacityRawRes);
 			}
 		},
 		interval: null

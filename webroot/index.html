@@ -18,7 +18,9 @@
   <body>
     <div id="app" v-cloak>
       <n-config-provider id="layout" :theme="theme">
-        <header id="header">Hyper OS 电池信息 For Web UI</header>
+        <header id="header">
+          <h1 class="font-bold" :class="osTheme=== 'dark' ? '!text-gray-300' : '!text-gray-600'">Hyper OS 电池信息 For Web UI</h1>
+        </header>
         <main id="main">
           <div class="setting">
             <div class="mt-3">
@@ -54,12 +56,13 @@
                   :class="`divide-y ${osTheme=== 'dark' ? 'divide-sothx-gray-color' : 'divide-gray-200'}`"
                 >
                   <div
+                    v-if="realQuantityHook.qcomBatteryFg1RSocInfo.current"
                     class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4"
                   >
                     <dt
                       :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`"
                     >
-                      真实电量（高通） {{ osThemeRef }}
+                      真实电量（高通）
                     </dt>
                     <dd
                       :class="`mt-1 text-sm leading-6 ${osTheme=== 'dark' ? 'text-gray-300' : 'text-gray-700'} sm:col-span-2 sm:mt-0`"
@@ -88,7 +91,7 @@
                       <div
                         v-if="realQuantityHook.qcomBatteryFg1RSocInfo.autoReload"
                       >
-                        <p class="my-2">隔多少秒刷新一次</p>
+                        <p class="my-2">隔 {{ realQuantityHook.qcomBatteryFg1RSocInfo.timer }} 秒刷新一次</p>
                         <p>
                           <n-slider
                             v-model:value="realQuantityHook.qcomBatteryFg1RSocInfo.timer"
@@ -96,24 +99,14 @@
                             :min="1"
                             :max="30"
                             :step="1"
-                          />
-                          <n-input-number
-                            :show-button="false"
-                            class="pt-3"
-                            readonly
-                            placeholder="请输入刷新频率间隔时间"
-                            v-model:value="realQuantityHook.qcomBatteryFg1RSocInfo.timer"
-                            :min="0"
-                            :max="30"
-                            :step="1"
-                          />
+                          ></n-slider>
                         </p>
                       </div>
                     </dd>
                   </div>
                   <div
                   v-if="realQuantityHook.capacityRawInfo.current"
-                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                  class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
                   <dt
                     :class="`text-sm font-medium leading-6 ${osTheme=== 'dark' ? 'text-white' : 'text-gray-900'}`">
                     真实电量
@@ -140,23 +133,14 @@
                       </n-switch>
                     </p>
                     <div v-if="realQuantityHook.capacityRawInfo.autoReload">
-                      <p class="my-2"> 隔多少秒刷新一次 </p>
+                      <p class="my-2"> 隔 {{ realQuantityHook.qcomBatteryFg1RSocInfo.timer }} 秒刷新一次 </p>
                       <p>
                         <n-slider
                           v-model:value="realQuantityHook.capacityRawInfo.timer"
                           size="small"
                           :min="1"
                           :max="30"
-                          :step="1" />
-                        <n-input-number
-                          :show-button="false"
-                          class="pt-3"
-                          readonly
-                          placeholder="请输入刷新频率间隔时间"
-                          v-model:value="realQuantityHook.capacityRawInfo.timer"
-                          :min="0"
-                          :max="30"
-                          :step="1" />
+                          :step="1" ></n-slider>
                       </p>
                     </div>
                   </dd>
@@ -248,7 +232,9 @@
             </div>
           </div>
         </main>
-        <footer id="footer">Designed By Sothx</footer>
+        <footer id="footer">
+          <p class="font-bold" :class="osTheme=== 'dark' ? '!text-gray-300' : '!text-gray-600'">Designed By Sothx</p>
+        </footer>
       </n-config-provider>
     </div>
     <script type="module">
