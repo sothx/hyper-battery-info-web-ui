@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script type="module" src="./assets/ResizeObserver.global.js"></script>
+  <script src="./assets/vue.global.js"></script>
+  <script src="./assets/naive-ui.js"></script>
+  <script type="module" src="./assets/kernelsu/index.js"></script>
+  <script type="module" src="./web.config.js"></script>
+  <link rel="stylesheet" type="text/css" href="./assets/style.css">
+</head>
+
+<body>
+  <div id="app">
+    <n-config-provider id="layout" :theme="theme">
+      <header id="header">Shamiko 工作模式 For Web UI</header>
+      <main id="main">
+        <n-card class="shamikoMode" title="Shamiko 工作模式">
+          <n-switch :rail-style="railStyle" @update:value="(value) => changeShamikoMode(value)" :value="currentShamikoMode === 'whitelist' ? true : false" :loading="switchShamikoModeLoading">
+            <template #checked>白名单模式</template>
+            <template #unchecked>黑名单模式</template>
+          </n-switch>
+        </n-card>
+        </n-card>
+      </main>
+      <footer id="footer">Designed By Sothx</footer>
+    </n-config-provider>
+  </div>
+  <script type="module">
+    import {
+      exec
+    } from './assets/kernelsu/index.js';
+    import resizeObserverPolyfill from './assets/ResizeObserver.global.js';
+    import webConfig from './web.config.js'
+    const {
+      createApp,
+      ref,
+      onMounted,
+      computed
+    } = Vue;
+    const {
+      useOsTheme,
+      darkTheme,
+      lightTheme,
+      createDiscreteApi
+    } = naive;
+
+    const app = createApp({
+      setup() {
+        // 深色主题
+        const osThemeRef = useOsTheme()
+        const configProviderPropsRef = computed(() => ({
+          theme: osThemeRef.value === 'dark' ? darkTheme : lightTheme
+        }))
+        const {
+          message,
+          modal,
+          notification
+        } = createDiscreteApi(['message', 'modal', 'notification'], {
+          configProviderProps: configProviderPropsRef,
+        });
+        // Shamiko开关 
+        const switchShamikoModeLoading = ref(true);
+        const currentShamikoMode = ref('blacklist');
+        // 开关样式
+        const railStyle = ({
+          focused,
+          checked
+        }) => {
+          const style = {};
+          if (checked) {
+            style.background = '#d03050';
+            if (focused) {
+              style.boxShadow = '0 0 0 2px #d0305040';
+            }
+          } else {
+            style.background = '#2080f0';
+            if (focused) {
+              style.boxShadow = '0 0 0 2px #2080f040';
+            }
+          }
+          return style;
+        };
+        // 获取Shamiko状态
+        const getShamikoMode = () => {
+          const shellCommon = `ls /data/adb/shamiko/whitelist &>/dev/null && echo "whitelist" || echo "blacklist"`;
+          return new Promise(async (resolve, reject) => {
+            // Mock数据
+            if (webConfig.env === 'dev') {
+              resolve('whitelist')
+            }
+            try {
+              const {
+                errno,
+                stdout,
+                stderr
+              } = await exec(shellCommon);
+              errno ? reject(stderr) : resolve(stdout);
+            } catch (err) {
+              reject(err)
+            }
+          })
+        }
+        const putShamikoMode = (mode) => {
+          if (['whitelist', 'blacklist'].includes(mode)) {
+            const shellCommon =
+              mode === 'whitelist' ? `touch /data/adb/shamiko/whitelist` : 'rm -rf /data/adb/shamiko/whitelist';
+            return new Promise(async (resolve, reject) => {
+            // Mock数据
+            if (webConfig.env === 'dev') {
+              resolve('success')
+            }
+              try {
+                const {
+                  errno,
+                  stdout,
+                  stderr
+                } = await exec(shellCommon);
+                errno ? reject(stderr) : resolve(stdout);
+              } catch (err) {
+                reject(err)
+              }
+            })
+          } else {
+            modal.create({
+              title: '更新 Shamiko 工作模式失败',
+              preset: 'dialog',
+              type: 'error',
+              content: `更新的模式类型非法，仅支持whitelist/blacklist`
+            })
+          }
+        }
+        // 切换ShamikoMode
+        const changeShamikoMode = async (value) => {
+          const currentMode = value ? 'whitelist' : 'blacklist'
+          putShamikoMode(currentMode).then((res) => {
+            modal.create({
+              title: '切换 Shamiko 工作模式成功',
+              type: 'success',
+              preset: 'dialog',
+              content: `好耶w，Shamiko的工作模式已成功切换为 ${value ? '白名单模式' : '黑名单模式'} `,
+              positiveText: '确定'
+            })
+            currentShamikoMode.value = currentMode;
+          }).catch((err) => {
+            if (err instanceof Error) {
+              modal.create({
+                title: '切换 Shamiko 工作模式失败',
+                preset: 'dialog',
+                type: 'error',
+                content: `错误信息: ${err.message}`,
+                positiveText: '确定'
+              })
+            } else {
+              modal.create({
+                title: '切换 Shamiko 工作模式失败',
+                type: 'error',
+                preset: 'dialog',
+                content: `错误信息: ${err}`,
+                positiveText: '确定'
+              })
+            }
+
+          })
+
+        }
+        // 初始化生命周期
+        onMounted(() => {
+          // 获取Shamiko状态
+          getShamikoMode().then((res) => {
+            if (res === 'whitelist') {
+              currentShamikoMode.value = 'whitelist';
+              switchShamikoModeLoading.value = false;
+            } else if (res === 'blacklist') {
+              currentShamikoMode.value = 'blacklist';
+              switchShamikoModeLoading.value = false;
+            } else {
+              modal.create({
+                title: '获取 Shamiko 工作模式失败',
+                preset: 'dialog',
+                type: 'error',
+                content: `错误信息: ${res}`,
+                positiveText: '确定'
+              })
+            }
+
+          }).catch((err) => {
+            if (err instanceof Error) {
+              modal.create({
+                title: '获取 Shamiko 工作模式失败',
+                preset: 'dialog',
+                type: 'error',
+                content: `错误信息: ${err.message}`,
+                positiveText: '确定'
+              })
+            } else {
+              modal.create({
+                title: '获取 Shamiko 工作模式失败',
+                preset: 'dialog',
+                type: 'error',
+                content: `错误信息: ${err}`,
+                positiveText: '确定'
+              })
+            }
+          })
+        });
+
+        return {
+          railStyle,
+          switchShamikoModeLoading,
+          currentShamikoMode,
+          changeShamikoMode,
+          theme: computed(() => (osThemeRef.value === 'dark' ? darkTheme : lightTheme)),
+          osTheme: osThemeRef
+        };
+      },
+    });
+
+    app.use(naive);
+    app.mount("#app");
+
+    const ro = new ResizeObserver((entries, observer) => {
+      for (const entry of entries) {
+        const {
+          left,
+          top,
+          width,
+          height
+        } = entry.contentRect;
+
+
+        // console.log('Element:', entry.target);
+        // console.log(`Element's size: ${ width }px x ${ height }px`);
+        // console.log(`Element's paddings: ${ top }px ; ${ left }px`);
+      }
+    });
+
+    ro.observe(document.body);
+  </script>
+</body>
+
+</html>

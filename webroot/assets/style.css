@@ -1,0 +1,84 @@
+/* CSS变量 */
+:root {
+    --sothx-text-color: rgb(31, 34, 37);
+    --sothx-base-color: #fff;
+    --sothx-bg-color: #fff;
+    --sothx-border-color: rgb(239,239,245);
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --sothx-base-color: rgb(24,24,28);
+        --sothx-text-color: rgba(255, 255, 255, 0.9);
+        --sothx-bg-color: rgb(16,16,20);
+        --sothx-border-color: rgb(255,255,255,0.09);
+    }
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body,
+#layout,
+#app {
+    height: 100%;
+    box-sizing: border-box;
+    background-color: var(--sothx-base-color);
+}
+
+#layout {
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+
+#header {
+    height: 50px;
+    background-color: var(--sothx-base-color);
+    color: var(--sothx-text-color);
+    text-align: center;
+    line-height: 50px;
+    flex-basis: 100%;
+    box-sizing:border-box;
+    border-bottom: 1px solid var(--sothx-border-color);
+}
+
+#footer {
+    height: 30px;
+    background-color: var(--sothx-base-color);
+    color: var(--sothx-text-color);
+    text-align: center;
+    line-height: 30px;
+    flex-basis: 100%;
+    box-sizing:border-box;
+    border-top: 1px solid var(--sothx-border-color);
+}
+
+
+#main {
+    height: calc(100% - 82px);
+    overflow: scroll;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    margin: 0 auto;
+    color: var(--sothx-text-color);
+    background-color: var(--sothx-bg-color);
+    /* background-color: #eee; */
+    text-align: center;
+}
+
+#main::-webkit-scrollbar {
+    display: none;
+}
+
+.shamikoMode{
+    width: 50%;
+    /* text-align: left; */
+}
