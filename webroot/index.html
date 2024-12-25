@@ -132,7 +132,7 @@
                       </n-switch>
                     </p>
                     <div v-if="realQuantityHook.capacityRawInfo.autoReload">
-                      <p class="my-2"> 隔 {{ realQuantityHook.qcomBatteryFg1RSocInfo.timer }} 秒刷新一次 </p>
+                      <p class="my-2"> 隔 {{ realQuantityHook.capacityRawInfo.timer }} 秒刷新一次 </p>
                       <p>
                         <n-slider
                           v-model:value="realQuantityHook.capacityRawInfo.timer"
