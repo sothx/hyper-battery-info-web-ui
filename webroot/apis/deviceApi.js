@@ -26,6 +26,18 @@ export const getBatterySohQcom = () => {
     })
 };
 
+export const getBatterySohXMPower = () => {
+	const shellCommon = `cat /sys/class/xm_power/fg_master/soh`;
+	return new Promise(async (resolve, reject) => {
+        if (webConfig.env === 'dev') {
+            resolve(`90`);
+        } else {
+            const { errno, stdout, stderr } = await exec(shellCommon);
+            errno ? reject(stderr) : stdout === 'null' ? resolve('') : resolve(stdout);
+        }
+    })
+};
+
 export const getBatterySohMTK = () => {
 	const shellCommon = `cat /sys/class/power_supply/bms/soh`;
 	return new Promise(async (resolve, reject) => {

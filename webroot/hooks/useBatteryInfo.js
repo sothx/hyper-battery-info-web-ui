@@ -29,6 +29,8 @@ export function useBatteryInfo() {
 
     const sohMTK = ref(0);
 
+    const sohXMPower = ref(0);
+
     const chargeFullDesign = ref(0);
 
     const chargeFull = ref(0);
@@ -40,6 +42,7 @@ export function useBatteryInfo() {
             // 售后电池健康度
             $to(deviceApi.getBatterySohQcom()),
             $to(deviceApi.getBatterySohMTK()),
+            $to(deviceApi.getBatterySohXMPower()),
             // 电池设计容量
             $to(deviceApi.getBatteryChargeFullDesign()),
             // 当前电池容量
@@ -52,6 +55,7 @@ export function useBatteryInfo() {
         const [
             [, getBatterySohQcomRes],
             [, getBatterySohMTKRes],
+            [, getBatterySohXMPowerRes],
             [, getBatteryChargeFullDesignRes],
             [, getBatteryChargeFullRes],
             [, getBatteryCycleCountRes],
@@ -59,6 +63,7 @@ export function useBatteryInfo() {
         // 售后电池健康度
         sohQcom.value = Number(getBatterySohQcomRes)
         sohMTK.value = Number(getBatterySohMTKRes)
+        sohXMPower.value = Number(getBatterySohXMPowerRes)
         // 电池设计容量
         chargeFullDesign.value = Number(getBatteryChargeFullDesignRes)
         // 当前电池容量
@@ -75,6 +80,7 @@ export function useBatteryInfo() {
 	return {
         sohQcom,
         sohMTK,
+        sohXMPower,
         chargeFullDesign,
         chargeFull,
         cycleCount
